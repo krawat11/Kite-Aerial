@@ -1,0 +1,188 @@
+---
+/**
+ * One photograph, with its flight log beside it.
+ *
+ * Handles three states, so no page has to:
+ *   real       — a Kite Aerial photograph, through Astro's <Picture>
+ *   reference  — dev-only filler, plain <img>, never in a build
+ *   empty      — a labelled placeholder at the right shape, naming the folder
+ *                to drop a file into. It disappears the moment one is there.
+ */
+import { Picture } from 'astro:assets';
+import { asset, flightLog, widthsFor, DROP } from '../lib/frames.js';
+
+const {
+  frame = null,
+  role = null,
+  ratio = '4 / 3',
+  sizes = '(min-width: 60rem) 50vw, 100vw',
+  widths = null,
+  loading = 'lazy',
+  showLog = true,
+  showCaption = true,
+  caption = null,
+  index = null,
+  hint = null,
+  forceRatio = false,
+  class: className = '',
+} = Astro.props;
+
+const img = asset(frame);
+const log = showLog ? flightLog(frame) : null;
+const outcome = caption ?? frame?.outcome ?? null;
+/*
+ * Photographs normally keep their own shape — a forced uniform crop throws away
+ * the composition the shot was flown for. The exception is a row of thumbnails
+ * standing side by side, where wildly different heights read as an accident
+ * rather than a decision. There, forceRatio makes them agree.
+ */
+const aspect = frame && !forceRatio ? `${frame.width} / ${frame.height}` : ratio;
+const label = index != null ? String(index).padStart(2, '0') : null;
+const dropInto = role ? DROP[role] : null;
+---
+
+<figure class={`frame ${className}`} style={`--ratio:${aspect}`}>
+  {
+    img ? (
+      <Picture
+        src={img}
+        formats={['avif', 'webp']}
+        fallbackFormat="jpg"
+        quality={80}
+        widths={widths ?? widthsFor(frame)}
+        sizes={sizes}
+        loading={loading}
+        decoding={loading === 'eager' ? 'sync' : 'async'}
+        alt={frame.alt ?? ''}
+        class="frame__img"
+      />
+    ) : frame?.reference ? (
+      <img
+        src={frame.master}
+        width={frame.width}
+        height={frame.height}
+        loading={loading}
+        alt=""
+        class="frame__img"
+      />
+    ) : (
+      <div class="frame__empty" role="img" aria-label={`Photograph slot — add a file to ${dropInto ?? 'source/'}`}>
+        <svg class="frame__ticks" viewBox="0 0 100 75" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 0 H10 M0 0 V7.5 M100 0 H90 M100 0 V7.5 M0 75 H10 M0 75 V67.5 M100 75 H90 M100 75 V67.5" />
+        </svg>
+        <div class="frame__drop">
+          {label && <span class="frame__index">{label}</span>}
+          <span class="frame__path">{dropInto ?? 'source/'}</span>
+          <span class="frame__hint">{hint ?? 'drop a photograph here, then run npm run images'}</span>
+        </div>
+      </div>
+    )
+  }
+
+  {
+    (outcome || log) && (
+      <figcaption class="frame__cap">
+        {showCaption && outcome && <span class="frame__outcome">{outcome}</span>}
+        {log && <span class="mono frame__log">{log}</span>}
+      </figcaption>
+    )
+  }
+</figure>
+
+<style>
+  .frame {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .frame__img,
+  .frame__empty {
+    width: 100%;
+    aspect-ratio: var(--ratio);
+    object-fit: cover;
+    background: color-mix(in srgb, var(--mist) 45%, var(--base));
+  }
+
+  .frame__empty {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    border: 1px dashed var(--mist);
+    background:
+      repeating-linear-gradient(
+        -45deg,
+        transparent 0 11px,
+        color-mix(in srgb, var(--mist) 34%, transparent) 11px 12px
+      ),
+      color-mix(in srgb, var(--mist) 16%, var(--base));
+  }
+
+  .frame__drop {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    text-align: center;
+    background: color-mix(in srgb, var(--base) 88%, transparent);
+    padding: 0.7rem 1rem;
+    max-width: 100%;
+  }
+
+  .frame__index {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    color: var(--sea);
+  }
+
+  .frame__path {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    color: var(--tide);
+    word-break: break-all;
+  }
+
+  .frame__hint {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    line-height: 1.55;
+    color: var(--sea);
+    max-width: 22rem;
+  }
+
+  .frame__ticks {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    stroke: var(--sea);
+    stroke-width: 0.6;
+    fill: none;
+    opacity: 0.4;
+  }
+
+  .frame__cap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .frame__outcome {
+    font-size: 0.98rem;
+    line-height: 1.4;
+    color: color-mix(in srgb, var(--slate) 90%, var(--sea));
+    max-width: 30rem;
+    text-wrap: pretty;
+  }
+
+  .frame__log {
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+  }
+</style>

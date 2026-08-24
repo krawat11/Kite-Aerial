@@ -1,0 +1,57 @@
+---
+/**
+ * Sits beside the prices, at the decision point. Not a carousel, not a section
+ * headed "Testimonials".
+ *
+ * Every quote is verbal only until the owner confirms the exact wording in
+ * writing. Until then this renders a marked placeholder in dev and nothing at
+ * all in a build. No plausible-sounding quote gets written to fill the space.
+ */
+import DevNote from './DevNote.astro';
+
+const { item } = Astro.props;
+const ready = Boolean(item?.quote && item?.attribution);
+---
+
+{
+  ready ? (
+    <figure class="quote">
+      <blockquote>
+        <p>{item.quote}</p>
+      </blockquote>
+      <figcaption class="mono">
+        {item.attribution}
+        {item.role && <span class="quote__role">, {item.role}</span>}
+      </figcaption>
+    </figure>
+  ) : (
+    <DevNote label="testimonial pending">{item?.status ?? 'Awaiting written confirmation from the owner.'}</DevNote>
+  )
+}
+
+<style>
+  .quote {
+    margin: 0;
+    padding-left: 1.15rem;
+    border-left: 2px solid var(--tide);
+  }
+
+  .quote blockquote {
+    margin: 0 0 0.6rem;
+    font-family: var(--display);
+    font-variation-settings: 'opsz' 24;
+    font-size: var(--step-1);
+    line-height: 1.35;
+    letter-spacing: -0.008em;
+    text-wrap: pretty;
+  }
+
+  .quote figcaption {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+
+  .quote__role {
+    color: var(--sea);
+  }
+</style>

@@ -1,0 +1,91 @@
+---
+/**
+ * The ground-level photograph beside the aerial one, minimally framed.
+ * The strongest element on the page, because the visitor draws the conclusion
+ * without being told it.
+ *
+ * It needs both halves. Drop one file into source/comparison/ground/ and one
+ * into source/comparison/aerial/ — the same house, one from the pavement and
+ * one from the air — and the section fills itself in.
+ */
+import Frame from './Frame.astro';
+import SetupNote from './SetupNote.astro';
+import { comparisonPair } from '../lib/frames.js';
+
+const { ground, aerial, ready } = comparisonPair();
+---
+
+<section class="section" aria-labelledby="compare">
+  <div class="wrap">
+    <p class="eyebrow">The same house</p>
+    <h2 id="compare">One of these is what the buyer sees first.</h2>
+
+    {
+      !ready && (
+        <SetupNote title="Comparison pair">
+          <p>
+            Two photographs of the <strong>same house</strong> — one from the pavement, one from the air. Put one
+            file in <code>source/comparison/ground/</code> and one in <code>source/comparison/aerial/</code>, then
+            run <code>npm run images</code>.
+          </p>
+          <p>
+            This is the most persuasive section on the page. Shoot the ground frame on your next job before you
+            launch; it takes thirty seconds and it makes the argument without a word of sales copy.
+          </p>
+        </SetupNote>
+      )
+    }
+
+    <div class="compare">
+      <div class="compare__half">
+        <p class="mono compare__tag">From the pavement</p>
+        <Frame
+          frame={ground}
+          role="comparison-ground"
+          ratio="4 / 3"
+          showCaption={false}
+          showLog={false}
+          index={1}
+          hint="one photograph of a house at eye level"
+          sizes="(min-width: 52rem) 46vw, 92vw"
+        />
+      </div>
+      <div class="compare__half">
+        <p class="mono compare__tag">From the air</p>
+        <Frame
+          frame={aerial}
+          role="comparison-aerial"
+          ratio="4 / 3"
+          showCaption={false}
+          showLog={false}
+          index={2}
+          hint="the same house, from above"
+          sizes="(min-width: 52rem) 46vw, 92vw"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .compare {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    margin-top: 2.5rem;
+  }
+
+  @media (min-width: 52rem) {
+    .compare {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+  }
+
+  .compare__tag {
+    margin: 0 0 0.65rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+</style>

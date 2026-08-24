@@ -1,0 +1,284 @@
+---
+import Base from '../layouts/Base.astro';
+import HeroCluster from '../components/HeroCluster.astro';
+import ComparisonPair from '../components/ComparisonPair.astro';
+import Pricing from '../components/Pricing.astro';
+import EnquiryForm from '../components/EnquiryForm.astro';
+import Frame from '../components/Frame.astro';
+import SetupNote from '../components/SetupNote.astro';
+import site from '../content/site.json';
+import { url } from '../lib/url.js';
+import { heroFrames, framesFor, counts } from '../lib/frames.js';
+
+const hero = heroFrames(6);
+// Nothing in source/hero/ yet, so the cluster is borrowing from elsewhere
+// rather than sitting empty. Worth saying out loud in the setup panel.
+const heroBorrowed = framesFor('hero').length === 0 && hero.filter(Boolean).length > 0;
+const [audienceA, audienceB, audienceC] = framesFor('portfolio', { count: 3, fill: true });
+const anythingMissing =
+  hero.filter(Boolean).length < 3 ||
+  [audienceA, audienceB, audienceC].some((f) => !f) ||
+  framesFor('comparison-ground').length === 0 ||
+  counts.kept === 0;
+// The hero already carries the establishing frame; the teaser takes the
+// top-down so the page isn't showing the same photograph twice.
+const caseFrames = framesFor('case');
+const teaser = caseFrames[caseFrames.length - 1] ?? null;
+
+const audiences = [
+  {
+    id: 'lets',
+    slot: 1,
+    hint: 'first file in the folder, or one named 01',
+    title: 'Holiday lets and Airbnb',
+    frame: audienceA,
+    body: [
+      'A photograph of the sitting room tells a guest what the sofa looks like. It does not tell them the sea is over the next field, or that the garden backs onto grazing land rather than a car park.',
+      'Those are the things people book on, and they only fit in a frame taken from above. Your listing sits next to forty others shot on the same phone in the same rooms.',
+    ],
+  },
+  {
+    id: 'land',
+    slot: 2,
+    hint: 'second file, or one named 02',
+    title: 'Land, farms and rural sales',
+    frame: audienceB,
+    body: [
+      'Acreage is a number until somebody can see it. From a hundred metres the boundary hedge, the access track and the field pattern read as one picture.',
+      'That saves explaining them in the particulars, and it saves the viewing that was never going to work.',
+    ],
+  },
+  {
+    id: 'build',
+    slot: 3,
+    hint: 'third file, or one named 03',
+    title: 'Developers and self-builders',
+    frame: audienceC,
+    body: [
+      'Flown from the same position each visit, a build becomes a sequence rather than a folder of photographs.',
+      'Useful for progress reports, for funders who are not going to visit, and for the finished-project page you will want at the end of it.',
+    ],
+  },
+];
+---
+
+<Base
+  description="Aerial photography for property listings, holiday lets and land across Gower, Swansea and Carmarthenshire. Fixed prices, shown on the page."
+>
+  <section class="opening">
+    <div class="wrap">
+      {
+        anythingMissing && (
+          <SetupNote title="How to put your photographs in" tone="banner">
+            <p>
+              Drop image files into the folders under <code>source/</code>, then run <code>npm run images</code>.
+              That is the whole job — nothing in the code needs editing, and you can rerun it as often as you like.
+            </p>
+            <ul>
+              <li>
+                <code>source/hero/</code> — 3 to 6 of your strongest frames, for the cluster below
+              </li>
+              <li>
+                <code>source/portfolio/</code> — three frames for the three blocks further down
+              </li>
+              <li>
+                <code>source/case-study/</code> — one shoot in sequence, named <code>01 -</code>,{' '}
+                <code>02 -</code>, <code>03 -</code>
+              </li>
+              <li>
+                <code>source/comparison/ground/</code> and <code>source/comparison/aerial/</code> — the same
+                house, twice
+              </li>
+              <li>
+                <code>source/video/</code> — one orbit clip for the case study, then{' '}
+                <code>npm run video</code> instead
+              </li>
+            </ul>
+            {heroBorrowed && (
+              <p>
+                <strong>Right now the cluster below is borrowing the case study photographs</strong>, because
+                <code>source/hero/</code> is empty. Put your own picks in there and it will use those instead.
+              </p>
+            )}
+            <p>
+              JPEG, PNG, HEIC straight off an iPhone, TIFF, WebP, AVIF, GIF and BMP all work. Sideways photos are
+              turned the right way up, any shape is fine, and nothing is ever enlarged. Every empty slot on this
+              page names the folder that fills it.
+            </p>
+            <p>
+              Captions and alt text go in a plain <code>.txt</code> beside each image — full instructions in{' '}
+              <code>source/READ ME FIRST.txt</code>. To hide these panels, set <code>showSetupNotes</code> to{' '}
+              <code>false</code> in <code>src/content/site.json</code>.
+            </p>
+          </SetupNote>
+        )
+      }
+
+      <div class="opening__text">
+        <h1>The house, and everything around&nbsp;it.</h1>
+        <p class="lede">
+          Aerial photography for property listings, holiday lets and land across {site.area}. Two hours on site,
+          edited files back to you, prices on this page.
+        </p>
+        <p class="opening__actions">
+          <a class="btn" href="#enquiry">Send an enquiry</a>
+          <a class="btn btn--quiet" href={url("/case-study")}>See a full shoot</a>
+        </p>
+      </div>
+
+      <HeroCluster frames={hero} />
+    </div>
+  </section>
+
+  <ComparisonPair />
+
+  <section class="section" aria-labelledby="who">
+    <div class="wrap">
+      <p class="eyebrow">Who this is for</p>
+      <h2 id="who">Three jobs, one aircraft.</h2>
+
+      <div class="audiences">
+        {
+          audiences.map((a) => (
+            <article class="audience" id={a.id}>
+              <h3>{a.title}</h3>
+              <Frame
+                frame={a.frame}
+                role="portfolio"
+                index={a.slot}
+                hint={a.hint}
+                ratio="4 / 3"
+                forceRatio
+                showLog={false}
+                sizes="(min-width: 62rem) 30vw, (min-width: 40rem) 46vw, 92vw"
+              />
+              {a.body.map((p) => (
+                <p>{p}</p>
+              ))}
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="teaser">
+    <div class="wrap teaser">
+      <div class="teaser__text">
+        <p class="eyebrow">Case study</p>
+        <h2 id="teaser">One property, four heights, one morning.</h2>
+        <p>
+          A house on a hillside north of Swansea, covered properly rather than in a single pass: an establishing
+          frame that puts it in its setting, closer elevations, a top-down showing the plot, and a slow orbit on
+          video.
+        </p>
+        <p>
+          The page walks through the sequence in the order it was flown, with a note on each angle and why it was
+          chosen.
+        </p>
+        <p><a class="btn btn--quiet" href={url("/case-study")}>See the full sequence</a></p>
+      </div>
+
+      <Frame
+        frame={teaser}
+        role="case"
+        hint="the last frame of the case study sequence"
+        ratio="4 / 3"
+        showCaption={false}
+        sizes="(min-width: 56rem) 46vw, 92vw"
+      />
+    </div>
+  </section>
+
+  <Pricing />
+
+  <section class="section" id="enquiry" aria-labelledby="enquiry-h">
+    <div class="wrap">
+      <p class="eyebrow">Enquiries</p>
+      <h2 id="enquiry-h">Tell me where the property is.</h2>
+      <p class="lede" style="margin:1.1rem 0 2.5rem">
+        Dates, access and airspace all get checked before I quote, so the more you can say about the property the
+        faster this goes.
+      </p>
+      <EnquiryForm />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .opening {
+    padding-block: clamp(2.5rem, 6vw, 5rem) clamp(3rem, 7vw, 6rem);
+  }
+
+  .opening__text {
+    max-width: 46rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .opening h1 {
+    margin-bottom: 1.5rem;
+  }
+
+  .opening__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin: 2rem 0 0;
+  }
+
+  .audiences {
+    display: grid;
+    gap: 2.75rem 2rem;
+    grid-template-columns: 1fr;
+    margin-top: 2.75rem;
+  }
+
+  @media (min-width: 40rem) {
+    .audiences {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .audiences {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .audience h3 {
+    margin: 0 0 1.1rem;
+  }
+
+  .audience :global(.frame) {
+    margin-bottom: 1.25rem;
+  }
+
+  .audience p {
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--slate) 86%, var(--sea));
+    margin-bottom: 0.8rem;
+  }
+
+  .teaser {
+    display: grid;
+    gap: 2.25rem;
+    grid-template-columns: 1fr;
+    align-items: center;
+  }
+
+  @media (min-width: 56rem) {
+    .teaser {
+      grid-template-columns: 1fr 1fr;
+      gap: 3.5rem;
+    }
+  }
+
+  .teaser__text h2 {
+    margin-bottom: 1.3rem;
+  }
+
+  .teaser__text p {
+    max-width: 32rem;
+  }
+</style>

@@ -1,0 +1,359 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/url.js';
+
+const checks = [
+  {
+    place: 'A normal street or garden',
+    applies: 'Landowner permission for take-off and landing',
+    lead: 'None',
+  },
+  {
+    place: 'Inside the Swansea Airport zone',
+    applies: 'Airport permission, plus a call to the tower before launch',
+    lead: 'A few days',
+  },
+  {
+    place: 'Inside the Cardiff Airport zone',
+    applies: 'Air traffic control permission',
+    lead: 'A few days',
+  },
+  {
+    place: 'National Trust coast — Rhossili, land around Three Cliffs',
+    applies: 'Written permission from the Trust; commercial work goes through their filming office',
+    lead: 'Weeks',
+  },
+  {
+    place: 'Bannau Brycheiniog National Park',
+    applies: 'Filming enquiry to the park authority, and possibly Natural Resources Wales too',
+    lead: 'Weeks',
+  },
+  {
+    place: 'A Cadw monument',
+    applies: 'Application form, £5m public liability, method statement and risk assessment',
+    lead: 'Weeks',
+  },
+  {
+    place: 'Sennybridge and the Epynt ranges',
+    applies: 'Military land inside a danger area',
+    lead: 'Not available',
+  },
+];
+---
+
+<Base
+  title="Where I can fly"
+  description="Where drone photography is and isn't possible in South Wales: the Swansea and Cardiff airport zones, National Trust land on Gower, Bannau Brycheiniog and Cadw sites."
+>
+  <article>
+    <header class="section head">
+      <div class="wrap">
+        <p class="eyebrow">Where I can fly</p>
+        <h1>What I check before every job.</h1>
+        <p class="lede">
+          Most of the questions I get start with "can you actually fly there?" Usually yes. Sometimes yes with two
+          weeks' notice. Occasionally no, and it is better to know that before you book a photographer than after.
+        </p>
+        <p class="lede" style="margin-top:1rem">
+          This is the list I work through for every property, in the order I work through it.
+        </p>
+      </div>
+    </header>
+
+    <section class="section" aria-labelledby="quick">
+      <div class="wrap">
+        <h2 id="quick">The short version</h2>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Where the property is</th>
+                <th scope="col">What has to happen first</th>
+                <th scope="col">Notice needed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                checks.map((c) => (
+                  <tr>
+                    <th scope="row">{c.place}</th>
+                    <td>{c.applies}</td>
+                    <td class="mono">{c.lead}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose-section" aria-labelledby="aircraft">
+      <div class="wrap">
+        <h2 id="aircraft">Why the aircraft matters more than you'd think</h2>
+        <div class="cols">
+          <p>
+            I fly a sub-250g aircraft in the UK0/C0 class. That puts the work in the Open category, subcategory A1,
+            and A1 is the part that decides whether your house can be photographed at all.
+          </p>
+          <p>
+            In A1 I can fly in residential, recreational, commercial and industrial areas, and closer to people
+            than fifty metres. A heavier aircraft flying in A3 has to stay a hundred and fifty metres clear of
+            those areas, which rules out almost every house on a normal street.
+          </p>
+          <p>
+            The one hard limit that does not go away: no flying over a crowd. The Civil Aviation Authority defines
+            that as a group of people who could not move away quickly because of how many others are around them.
+            A busy beach on a bank holiday counts.
+          </p>
+          <p class="src">
+            <a href="https://www.caa.co.uk/drones/open-category/drone-code/where-you-can-fly-points-3-to-9" rel="noopener">CAA — where you can fly</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose-section" aria-labelledby="airports">
+      <div class="wrap">
+        <h2 id="airports">Airport zones</h2>
+        <div class="cols">
+          <p>
+            Protected aerodromes have a flight restriction zone around them: a circle of two to two and a half
+            nautical miles, plus a corridor a kilometre wide running five kilometres out from each end of the
+            runway, all the way up to two thousand feet. Inside that, you need the airport's permission before you
+            take off. Not a notification. Permission.
+          </p>
+          <p>
+            <strong>Swansea Airport</strong> sits at Fairwood Common, which is on the Gower peninsula rather than
+            at the edge of it, so a fair slice of eastern Gower falls inside its zone. They take requests through a
+            form on their website and ask for a call to the tower twenty minutes before launch so they can pass a
+            warning to other aircraft. In my experience they are straightforward to deal with. Worth knowing that
+            they run parachuting at weekends in spring and winter, with descents from fifteen thousand feet, which
+            can move a slot.
+          </p>
+          <p>
+            <strong>Cardiff Airport</strong> has its own zone covering a good part of the Vale of Glamorgan.
+            Permission comes from air traffic control there.
+          </p>
+          <p class="src">
+            <a href="https://swansea-airport.wales/about/drones/" rel="noopener">Swansea Airport — drones</a> ·
+            <a href="https://www.caa.co.uk/drones/moving-on-to-more-advanced-flying/airspace/aerodromes-heliports-and-spaceports/" rel="noopener">CAA — aerodromes</a> ·
+            <a href="https://nats-uk.ead-it.com/cms-nats/opencms/en/uas-restriction-zones/" rel="noopener">NATS — restriction zones</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose-section" aria-labelledby="nt">
+      <div class="wrap">
+        <h2 id="nt">National Trust land, which is most of the Gower coast</h2>
+        <div class="cols">
+          <p>
+            This is the one that catches people out, because the Gower coastline everybody wants photographed is
+            largely National Trust land. Rhossili and the ground around Three Cliffs are the obvious examples.
+          </p>
+          <p>
+            The Trust's position is that it does not permit unauthorised drone operation on its land, and its
+            byelaws state that an unauthorised person shall not operate an airborne vehicle over National Trust
+            property. Whatever view you take of how far that reaches into the airspace above, the part nobody
+            argues about is the ground: taking off or landing on their land without permission is not on.
+          </p>
+          <p>
+            For paid work they route it through their filming and locations office, which means an application,
+            evidence of competence and insurance, location fees, and footage licensed only for the project it was
+            shot for. It is a real process with a real lead time, so if your let is on Trust land, tell me early.
+          </p>
+          <p class="src">
+            <a href="https://www.nationaltrust.org.uk/who-we-are/about-us/flying-drones-at-our-places" rel="noopener">National Trust — flying drones at our places</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose-section" aria-labelledby="park">
+      <div class="wrap">
+        <h2 id="park">Bannau Brycheiniog</h2>
+        <div class="cols">
+          <p>
+            The national park authority asks that nothing is filmed on park land without permission, and runs a
+            filming enquiry process to grant it. Their published rates are aimed at feature films and advertising;
+            anything smaller is negotiated case by case, so a property shoot is a conversation rather than a
+            price list.
+          </p>
+          <p>
+            Give it lead time. Depending where the property is, Natural Resources Wales may need to sign off as
+            well, and that is not a same-week answer.
+          </p>
+          <p class="src">
+            <a href="https://beacons-npa.gov.uk/the-authority/filming-in-the-park" rel="noopener">Bannau Brycheiniog — filming in the park</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose-section" aria-labelledby="mod">
+      <div class="wrap">
+        <h2 id="mod">Sennybridge and the Epynt ranges</h2>
+        <div class="cols">
+          <p>
+            Military training land, sitting inside danger area D203. Live firing, and a permanent restriction
+            rather than a seasonal one. I do not fly there and I would be sceptical of anyone offering to.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose-section" aria-labelledby="cadw">
+      <div class="wrap">
+        <h2 id="cadw">Castles and scheduled monuments</h2>
+        <div class="cols">
+          <p>
+            Cadw runs its own policy, separate from everything above. You can fly over a scheduled monument if you
+            are complying with the drone code, but Cadw does not allow take-off or landing on its property without
+            going through them first.
+          </p>
+          <p>
+            Commercial work means an application form, five million pounds of public liability cover, a method
+            statement and risk assessments, submitted early enough to be checked. Depending on the site it can also
+            mean a partial or full closure while you fly, which carries a cost. Fine if the shot matters. Worth
+            knowing before you promise it to a client.
+          </p>
+          <p class="src">
+            <a href="https://cadw.gov.wales/visit/venue-hire/filming-photography/cadw-drone-policy" rel="noopener">Cadw — drone policy</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose-section" aria-labelledby="landowner">
+      <div class="wrap">
+        <h2 id="landowner">Permission to stand somewhere</h2>
+        <div class="cols">
+          <p>
+            The one people forget. Every permission above is about the air. None of them gives anyone the right to
+            stand on a piece of ground and launch from it.
+          </p>
+          <p>
+            For a house shoot that is usually the owner saying yes, which they have already done by booking. For a
+            field, a track or a verge it is whoever owns that field, track or verge. I sort it out before the day
+            rather than knocking on a door with a drone in my hand.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section closing">
+      <div class="wrap">
+        <p class="closing__line">
+          Tell me the postcode and I will tell you which of these applies before you commit to anything.
+        </p>
+        <p style="margin-top:2rem"><a class="btn" href={url("/#enquiry")}>Send an enquiry</a></p>
+      </div>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .head h1 {
+    margin-bottom: 1.5rem;
+  }
+
+  .prose-section .wrap {
+    display: grid;
+    gap: 1.5rem 3rem;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  @media (min-width: 56rem) {
+    .prose-section .wrap {
+      grid-template-columns: minmax(12rem, 16rem) minmax(0, 38rem);
+    }
+  }
+
+  .prose-section h2 {
+    max-width: 16rem;
+  }
+
+  .cols {
+    max-width: 38rem;
+  }
+
+  .cols > * + * {
+    margin-top: 1.1rem;
+  }
+
+  .cols p {
+    margin: 0;
+  }
+
+  .cols p {
+    line-height: 1.62;
+  }
+
+  .cols strong {
+    font-weight: 600;
+  }
+
+  .src {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    line-height: 1.9;
+    color: var(--sea);
+    padding-top: 0.9rem;
+    border-top: var(--rule);
+  }
+
+  .tablewrap {
+    overflow-x: auto;
+    margin-top: 2rem;
+    border-top: 2px solid var(--slate);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 40rem;
+    font-size: 0.94rem;
+  }
+
+  th,
+  td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.85rem 1.25rem 0.85rem 0;
+    border-bottom: var(--rule);
+    line-height: 1.45;
+  }
+
+  thead th {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sea);
+    font-weight: 400;
+    padding-block: 0.75rem;
+  }
+
+  tbody th {
+    font-weight: 500;
+    width: 34%;
+    padding-right: 2rem;
+  }
+
+  tbody td:last-child {
+    white-space: nowrap;
+    font-size: 0.78rem;
+  }
+
+  .closing__line {
+    font-family: var(--display);
+    font-variation-settings: 'opsz' 60;
+    font-size: var(--step-2);
+    line-height: 1.2;
+    letter-spacing: -0.018em;
+    max-width: 32rem;
+    text-wrap: balance;
+  }
+</style>

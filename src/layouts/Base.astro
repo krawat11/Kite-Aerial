@@ -1,0 +1,207 @@
+---
+import '../styles/global.css';
+import site from '../content/site.json';
+import { url } from '../lib/url.js';
+
+const { title, description, wide = false, noindex = false } = Astro.props;
+const here = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+const nav = [
+  { href: '/case-study', label: 'Case study' },
+  { href: '/where-we-fly', label: 'Where I can fly' },
+  { href: '/about', label: 'About' },
+];
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title ? `${title} — ${site.name}` : `${site.name} — ${site.tagline}`}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#F2F3F1" />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <link rel="canonical" href={new URL(here, Astro.site)} />
+    <meta property="og:title" content={title ? `${title} — ${site.name}` : site.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:url" content={new URL(here, Astro.site)} />
+    <meta property="og:image" content={new URL(url('/og.jpg'), Astro.site)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href={url("/favicon.svg")} type="image/svg+xml" />
+  </head>
+
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="masthead">
+      <div class="wrap masthead__inner">
+        <a class="brand" href={url("/")}>
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4">
+              <path d="M12 2 L20 12 L12 22 L4 12 Z" />
+              <path d="M12 2 L12 22" stroke-dasharray="2 2.5" />
+            </svg>
+          </span>
+          {site.name}
+        </a>
+
+        <nav aria-label="Main">
+          <ul class="masthead__nav">
+            {
+              nav.map((item) => (
+                <li>
+                  <a href={url(item.href)} aria-current={here === item.href ? 'page' : undefined}>
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li><a class="masthead__cta" href={url("/#enquiry")}>Send an enquiry</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class={wide ? '' : ''}>
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer__inner">
+        <div>
+          <p class="footer__name">{site.name}</p>
+          <p class="mono">{site.area}</p>
+        </div>
+
+        <div class="footer__cols">
+          <ul>
+            {nav.map((item) => <li><a href={url(item.href)}>{item.label}</a></li>)}
+            <li><a href={url("/#enquiry")}>Send an enquiry</a></li>
+          </ul>
+          <p class="mono footer__reg">
+            CAA Flyer ID and Operator ID held.<br />
+            {site.credentials.insurance}<br />
+            {site.credentials.aircraftClass}, operating in the Open category, subcategory {site.credentials.subcategory}.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <style>
+      .masthead {
+        border-bottom: var(--rule);
+        position: relative;
+        z-index: 20;
+        background: var(--base);
+      }
+
+      .masthead__inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem 1.5rem;
+        padding-block: 1.1rem;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-family: var(--display);
+        font-variation-settings: 'opsz' 20;
+        font-size: 1.18rem;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        color: var(--slate);
+        text-decoration: none;
+      }
+
+      .brand__mark {
+        color: var(--tide);
+        display: grid;
+        place-items: center;
+      }
+
+      .masthead__nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem 1.6rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 0.95rem;
+      }
+
+      .masthead__nav a {
+        color: var(--slate);
+        text-decoration: none;
+        padding-block: 0.3rem;
+        border-bottom: 1px solid transparent;
+      }
+
+      .masthead__nav a:hover {
+        border-bottom-color: var(--mist);
+      }
+
+      .masthead__nav a[aria-current='page'] {
+        border-bottom-color: var(--tide);
+      }
+
+      .masthead__cta {
+        color: var(--tide) !important;
+      }
+
+      .footer {
+        border-top: var(--rule);
+        padding-block: clamp(2.5rem, 6vw, 4rem);
+        margin-top: clamp(3rem, 8vw, 6rem);
+      }
+
+      .footer__inner {
+        display: grid;
+        gap: 2.5rem;
+        grid-template-columns: 1fr;
+      }
+
+      @media (min-width: 46rem) {
+        .footer__inner {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .footer__name {
+        font-family: var(--display);
+        font-variation-settings: 'opsz' 24;
+        font-size: 1.15rem;
+        margin-bottom: 0.3rem;
+      }
+
+      .footer__cols {
+        display: grid;
+        gap: 1.6rem;
+      }
+
+      .footer__cols ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 1.4rem;
+        font-size: 0.95rem;
+      }
+
+      .footer__reg {
+        line-height: 1.75;
+        margin: 0;
+      }
+    </style>
+  </body>
+</html>

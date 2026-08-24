@@ -1,0 +1,463 @@
+---
+/**
+ * The hero cluster.
+ *
+ * Frames assemble along a diagonal, each overlapping the last, offset and
+ * scaled unevenly — the way image footprints stack in photogrammetry software
+ * laid over a survey area. About 1.2 seconds, then completely still.
+ *
+ * The settled state is the layout. The animation only changes how the frames
+ * arrive, never where they end up, so reduced-motion users, slow connections
+ * and anything without CSS animation see the finished cluster with nothing
+ * missing. It is CSS-positioned, so every frame stays in document order,
+ * keyboard reachable and indexable.
+ *
+ * Sizing is by AREA, not width. Sizing by width makes a portrait frame tiny
+ * next to a landscape one — same number across, half the presence — which is
+ * what leaves a cluster looking thin and full of gaps. Giving each slot a share
+ * of the container's area instead lets a portrait be narrow and tall while
+ * still carrying the same visual weight, so a set of mixed shapes packs
+ * densely. Each frame keeps its own ratio; nothing is cropped to fit.
+ */
+import { Picture } from 'astro:assets';
+import { asset, flightLog, widthsFor, DROP } from '../lib/frames.js';
+
+const { frames = [] } = Astro.props;
+
+/*
+ * Slots are centre points, as fractions of the container, plus a rotation.
+ * `d` marks the dominant frame, which gets a larger share and the top of the
+ * stack. Centres sit close enough together that the frames must overlap.
+ */
+const PASSES = {
+  3: {
+    wide: [
+      { cx: 0.17, cy: 0.36, rot: -3.0 },
+      { cx: 0.5, cy: 0.62, rot: 1.4, d: true },
+      { cx: 0.84, cy: 0.34, rot: -2.2 },
+    ],
+    narrow: [
+      { cx: 0.3, cy: 0.22, rot: -2.8 },
+      { cx: 0.68, cy: 0.5, rot: 2.2, d: true },
+      { cx: 0.32, cy: 0.78, rot: -1.4 },
+    ],
+  },
+  4: {
+    wide: [
+      { cx: 0.14, cy: 0.36, rot: -3.2 },
+      { cx: 0.38, cy: 0.66, rot: 2.0 },
+      { cx: 0.65, cy: 0.34, rot: -1.4, d: true },
+      { cx: 0.88, cy: 0.64, rot: 2.6 },
+    ],
+    narrow: [
+      { cx: 0.26, cy: 0.13, rot: -2.8 },
+      { cx: 0.74, cy: 0.35, rot: 2.2 },
+      { cx: 0.34, cy: 0.63, rot: -1.4, d: true },
+      { cx: 0.76, cy: 0.88, rot: 2.6 },
+    ],
+  },
+  5: {
+    wide: [
+      { cx: 0.12, cy: 0.38, rot: -3.2 },
+      { cx: 0.33, cy: 0.68, rot: 2.4 },
+      { cx: 0.53, cy: 0.32, rot: -1.6 },
+      { cx: 0.71, cy: 0.64, rot: 1.2, d: true },
+      { cx: 0.9, cy: 0.34, rot: -2.8 },
+    ],
+    narrow: [
+      { cx: 0.28, cy: 0.14, rot: -2.8 },
+      { cx: 0.7, cy: 0.32, rot: 2.4 },
+      { cx: 0.3, cy: 0.51, rot: -1.6 },
+      { cx: 0.68, cy: 0.69, rot: 1.4, d: true },
+      { cx: 0.32, cy: 0.87, rot: -2.4 },
+    ],
+  },
+  6: {
+    wide: [
+      { cx: 0.1, cy: 0.36, rot: -3.4 },
+      { cx: 0.27, cy: 0.68, rot: 2.2 },
+      { cx: 0.44, cy: 0.32, rot: -1.8 },
+      { cx: 0.61, cy: 0.66, rot: 1.2, d: true },
+      { cx: 0.78, cy: 0.32, rot: 2.8 },
+      { cx: 0.92, cy: 0.66, rot: -2.4 },
+    ],
+    narrow: [
+      { cx: 0.27, cy: 0.11, rot: -3.0 },
+      { cx: 0.71, cy: 0.27, rot: 2.4 },
+      { cx: 0.28, cy: 0.43, rot: -1.6 },
+      { cx: 0.69, cy: 0.58, rot: 1.4, d: true },
+      { cx: 0.27, cy: 0.74, rot: -2.6 },
+      { cx: 0.71, cy: 0.9, rot: 2.2 },
+    ],
+  },
+};
+
+/** Container proportions: height ÷ width. */
+const RATIO = { wide: 9 / 16, narrow: 5 / 4 };
+
+/**
+ * How much room a frame may take before it crowds the box out.
+ *
+ * On a narrow screen the pass runs down the page rather than across it, so the
+ * ceiling has to fall as the count rises — six frames each 40% of the height
+ * cannot spread out, they just pile up in the middle.
+ */
+function limits(view, count) {
+  if (view === 'wide') return { maxH: 0.7, maxW: 0.44 };
+  return { maxH: Math.min(0.5, 1.9 / count), maxW: 0.74 };
+}
+
+/* A little air at the edges, so the cluster reads as a cluster rather than as
+ * a collage that has been cropped by its container. */
+const INSET = 0.015;
+
+/**
+ * Size a frame from its share of the container's area, then clamp it so it
+ * cannot outgrow the box. Returns fractions of the container.
+ */
+function size(imgRatio, area, view, count) {
+  const cr = RATIO[view];
+  const { maxH, maxW } = limits(view, count);
+  let w = Math.sqrt((area * cr) / imgRatio);
+  let h = (w * imgRatio) / cr;
+  if (h > maxH) {
+    h = maxH;
+    w = (h * cr) / imgRatio;
+  }
+  if (w > maxW) {
+    w = maxW;
+    h = (w * imgRatio) / cr;
+  }
+  return { w, h };
+}
+
+const clamp = (v, half) => Math.min(Math.max(v, half + INSET), 1 - half - INSET);
+
+/**
+ * A rotated frame is wider and taller than its box: the corners swing out. The
+ * clamp has to allow for that or the outermost frames get clipped by the
+ * container. Exact, rather than a fudge factor — the rotated bounding box of a
+ * w×h rectangle at angle θ is (w·cosθ + h·sinθ) by (w·sinθ + h·cosθ).
+ */
+function rotatedHalves(w, h, rot, view) {
+  const cr = RATIO[view];
+  const a = (Math.abs(rot) * Math.PI) / 180;
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  const absH = h * cr; // frame height in container-width units
+  return {
+    halfW: (w * cos + absH * sin) / 2,
+    halfH: (w * sin + absH * cos) / 2 / cr,
+  };
+}
+
+const available = frames.filter(Boolean);
+// Below three frames there is nothing worth clustering, so the empty state
+// lays out a four-frame pass instead of a lonely pair.
+const n = Math.min(6, Math.max(available.length >= 3 ? available.length : 4, 3));
+const pass = PASSES[n];
+
+/*
+ * Slots fill outward from the dominant one, so the strongest frame lands there
+ * rather than wherever it happens to sit in the manifest. The reveal still runs
+ * along the pass, because --i stays the slot's own position in it.
+ */
+/*
+ * A phone gets at most four frames. Five or six at a readable size cannot
+ * spread down a narrow column — they pile up in the middle and the cluster
+ * turns to mush. Fewer and larger reads better, and the rest of the work is
+ * three sections further down the page anyway.
+ */
+const narrowCount = Math.min(n, 4);
+const narrowPass = PASSES[narrowCount].narrow;
+
+const dominantIndex = pass.wide.findIndex((s) => s.d);
+const fillOrder = [dominantIndex, ...pass.wide.map((_, i) => i).filter((i) => i !== dominantIndex)];
+
+/*
+ * Total area shared out, so more photographs means smaller ones rather than a
+ * cluster that bursts its container. Deliberately below the point where the
+ * frames pile up: the centres alternate high and low, so neighbours meet at a
+ * corner rather than one sitting square on top of another.
+ */
+const BASE = { wide: 0.82 / n, narrow: 1.35 / n };
+const DOMINANT_SHARE = { wide: 1.45, narrow: 1.15 };
+
+const slots = pass.wide.map((wide, i) => {
+  const frame = available[fillOrder.indexOf(i)] ?? null;
+  const imgRatio = frame ? frame.height / frame.width : 0.75;
+  const dominant = Boolean(wide.d);
+  const narrow = narrowPass[i] ?? null;
+
+  const boxes = {};
+  for (const view of ['wide', 'narrow']) {
+    const src = view === 'wide' ? wide : narrow;
+    if (!src) {
+      boxes[view] = null;
+      continue;
+    }
+    const area = BASE[view] * (dominant ? DOMINANT_SHARE[view] : 1);
+    const { w, h } = size(imgRatio, area, view, view === 'narrow' ? narrowCount : n);
+    const { halfW, halfH } = rotatedHalves(w, h, src.rot, view);
+    const cx = clamp(src.cx, halfW);
+    const cy = clamp(src.cy, halfH);
+    boxes[view] = { w, h, cx, cy, left: cx - w / 2, top: cy - h / 2, rot: src.rot };
+  }
+
+  return { i, frame, dominant, onNarrow: Boolean(boxes.narrow), ...boxes };
+});
+
+const pct = (v) => `${(v * 100).toFixed(2)}%`;
+const path = slots.map((s) => `${(s.wide.cx * 100).toFixed(1)},${(s.wide.cy * 100).toFixed(1)}`).join(' ');
+---
+
+<div class="hero" data-frames={n}>
+  <svg class="hero__path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    <polyline points={path} vector-effect="non-scaling-stroke"></polyline>
+    {
+      slots.map((s) => (
+        <circle cx={(s.wide.cx * 100).toFixed(1)} cy={(s.wide.cy * 100).toFixed(1)} r="0.6" vector-effect="non-scaling-stroke" />
+      ))
+    }
+  </svg>
+
+  {
+    slots.map((slot) => {
+      const img = asset(slot.frame);
+      const log = flightLog(slot.frame);
+      const vars = [
+        `--x:${pct(slot.wide.left)}`,
+        `--y:${pct(slot.wide.top)}`,
+        `--w:${pct(slot.wide.w)}`,
+        `--rot:${slot.wide.rot}deg`,
+        ...(slot.narrow
+          ? [
+              `--mx:${pct(slot.narrow.left)}`,
+              `--my:${pct(slot.narrow.top)}`,
+              `--mw:${pct(slot.narrow.w)}`,
+              `--mrot:${slot.narrow.rot}deg`,
+            ]
+          : []),
+        `--z:${slot.dominant ? 10 : slot.i + 1}`,
+        `--i:${slot.i}`,
+      ].join('; ');
+
+      return (
+        <figure
+          class:list={['hero__slot', { 'hero__slot--dominant': slot.dominant, 'is-wide-only': !slot.onNarrow }]}
+          style={vars}
+        >
+          {img ? (
+            <Picture
+              src={img}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpg"
+              quality={78}
+              widths={widthsFor(slot.frame, [360, 560, 860, 1100])}
+              sizes={slot.dominant ? '(min-width: 48rem) 52vw, 90vw' : '(min-width: 48rem) 32vw, 58vw'}
+              loading={slot.dominant ? 'eager' : 'lazy'}
+              fetchpriority={slot.dominant ? 'high' : undefined}
+              alt={slot.frame.alt ?? ''}
+              class="hero__img"
+            />
+          ) : slot.frame?.reference ? (
+            <img src={slot.frame.master} width={slot.frame.width} height={slot.frame.height} alt="" class="hero__img" />
+          ) : (
+            <div class="hero__img hero__img--empty" role="img" aria-label={`Photograph slot — add a file to ${DROP.hero}`}>
+              <span class="hero__drop">
+                <span class="hero__pathname">{DROP.hero}</span>
+                <span class="hero__hint">drop 3–6 photographs here</span>
+              </span>
+            </div>
+          )}
+
+          {slot.dominant && log && <figcaption class="mono hero__log">{log}</figcaption>}
+        </figure>
+      );
+    })
+  }
+</div>
+
+<style>
+  .hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    isolation: isolate;
+  }
+
+  @media (min-width: 48rem) {
+    .hero {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  /* ---- the survey pass, sitting behind everything ---- */
+
+  .hero__path {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: visible;
+    animation: hero-fade 0.7s ease 0.05s backwards;
+  }
+
+  .hero__path polyline {
+    fill: none;
+    stroke: var(--mist);
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+  }
+
+  .hero__path circle {
+    fill: none;
+    stroke: var(--sea);
+    stroke-width: 1;
+    opacity: 0.55;
+  }
+
+  @media (max-width: 47.99rem) {
+    .hero__path {
+      display: none;
+    }
+  }
+
+  /* ---- frames ---- */
+
+  .hero__slot {
+    position: absolute;
+    left: var(--mx);
+    top: var(--my);
+    width: var(--mw);
+    margin: 0;
+    z-index: var(--z);
+    rotate: var(--mrot);
+    animation: hero-settle 0.55s cubic-bezier(0.22, 0.8, 0.26, 1) backwards;
+    animation-delay: calc(var(--i) * 0.11s + 0.06s);
+  }
+
+  @media (min-width: 48rem) {
+    .hero__slot {
+      left: var(--x);
+      top: var(--y);
+      width: var(--w);
+      rotate: var(--rot);
+    }
+  }
+
+  /* Frames the narrow pass has no room for. Still in the document, still
+     indexable — just not drawn on a phone. */
+  @media (max-width: 47.99rem) {
+    .hero__slot.is-wide-only {
+      display: none;
+    }
+  }
+
+  .hero__img {
+    width: 100%;
+    height: auto;
+    background: color-mix(in srgb, var(--mist) 45%, var(--base));
+    /* A hairline of page colour so overlapping frames stay separable. */
+    box-shadow:
+      0 0 0 3px var(--base),
+      0 1px 1px rgb(43 49 56 / 0.07),
+      0 10px 26px -10px rgb(43 49 56 / 0.3);
+  }
+
+  .hero__img--empty {
+    aspect-ratio: 4 / 3;
+    display: grid;
+    place-items: center;
+    padding: 0.6rem;
+    border: 1px dashed var(--mist);
+    background:
+      repeating-linear-gradient(
+        -45deg,
+        transparent 0 11px,
+        color-mix(in srgb, var(--mist) 38%, transparent) 11px 12px
+      ),
+      color-mix(in srgb, var(--mist) 20%, var(--base));
+    box-shadow: 0 0 0 3px var(--base);
+  }
+
+  .hero__drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    text-align: center;
+    background: color-mix(in srgb, var(--base) 88%, transparent);
+    padding: 0.45rem 0.7rem;
+    max-width: 100%;
+  }
+
+  .hero__pathname {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--tide);
+    word-break: break-all;
+  }
+
+  .hero__hint {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--sea);
+  }
+
+  .hero__slot--dominant .hero__img {
+    box-shadow:
+      0 0 0 4px var(--base),
+      0 1px 1px rgb(43 49 56 / 0.09),
+      0 22px 46px -16px rgb(43 49 56 / 0.4);
+  }
+
+  .hero__log {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 0.6rem);
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    rotate: calc(var(--rot) * -1);
+    transform-origin: left top;
+  }
+
+  @media (max-width: 47.99rem) {
+    .hero__log {
+      display: none;
+    }
+  }
+
+  /* ---- arrival ---- */
+
+  @keyframes hero-settle {
+    from {
+      translate: -7% -13%;
+      scale: 0.94;
+      opacity: 0;
+    }
+    to {
+      translate: 0 0;
+      scale: 1;
+      opacity: 1;
+    }
+  }
+
+  @keyframes hero-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__slot,
+    .hero__path {
+      animation: none;
+    }
+  }
+</style>

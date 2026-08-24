@@ -1,0 +1,84 @@
+{
+  "_readme": [
+    "OPTIONAL. Merged into manifest.json by `npm run images`, keyed by slug.",
+    "",
+    "You do not need this file to add photographs. Dropping a file into a folder",
+    "under source/ sets its role, and a .txt beside the image sets its caption and",
+    "alt text. This is here for the things a filename cannot carry.",
+    "",
+    "  stage    case study only — the two or three lines in your own voice about",
+    "           why that angle was flown. This is the part that turns photographs",
+    "           into evidence of competence, and the main reason to use this file.",
+    "  outcome  the caption. Overrides line 1 of a .txt sidecar.",
+    "  alt      the description. Overrides line 2 of a .txt sidecar.",
+    "  order    overrides the number at the start of the filename.",
+    "  role     overrides the folder the file was dropped into."
+  ],
+  "comparison-ground": {
+    "role": "comparison-ground",
+    "alt": "A rendered two-storey house photographed from its own terrace, showing the rear elevation, patio slabs and garden furniture, with the sky above and a hedge closing off the view behind."
+  },
+  "comparison-aerial": {
+    "role": "comparison-aerial",
+    "alt": "The same house from the air, showing the walled garden, the full terrace, the neighbouring properties and the wooded hillside rising behind the plot."
+  },
+  "case-01-establishing": {
+    "order": 1,
+    "role": "case",
+    "alt": "A white rendered house on a hillside above a wooded valley, with rough grazing land rising behind it and neighbouring houses along the lane to the right.",
+    "outcome": "Shows the house has open hillside behind it, not another street.",
+    "stage": "I start wide and high enough to answer the first question a buyer actually has, which is what surrounds the place. From the ground you can photograph the house or the view, never both. This frame puts the hillside, the tree line and the neighbours in one image, so nobody has to take the description on trust."
+  },
+  "case-02-rear-elevation": {
+    "order": 2,
+    "role": "case",
+    "alt": "The rear of the house seen from above and behind, showing a full-width paved terrace, a level lawn enclosed by a rendered wall, and mature planting along the boundary.",
+    "outcome": "The terrace and lawn read as one usable space, which they don't from the patio doors.",
+    "stage": "Then I come down and in. At this height the rear elevation, the terrace and the lawn sit in the same frame in proportion to each other. Standing on the terrace you cannot see how much lawn there is; standing on the lawn you lose the house. This is the angle that sells the outside space to somebody scrolling a listing."
+  },
+  "case-03-plot-boundaries": {
+    "order": 3,
+    "role": "case",
+    "alt": "Directly overhead view of the slate roof and the full plot, showing the driveway, terrace, garden and the line where the enclosed land meets open scrub.",
+    "outcome": "The plot boundary is a line you can see rather than a number in the particulars.",
+    "stage": "Straight down last. Plot shape is the thing people argue about after a viewing, and a plan drawing never quite settles it. Here the wall, the hedge and the change from garden to open ground are all visible in one frame, so the boundary stops being an abstraction."
+  },
+  "01-autumn-farmhouse": {
+    "role": "hero",
+    "alt": "A white weatherboarded farmhouse with a dark metal roof seen from above, a curved gravel drive sweeping past the porch, mown lawns either side and a maple in full autumn colour against the woodland edge."
+  },
+  "02-woodland-house": {
+    "role": "hero",
+    "alt": "A single-storey timber and glass house with a black standing-seam roof set in mature woodland, with a swimming pool along one flank and a stone path curving back through planting to the drive."
+  },
+  "03-lakeside-lodge": {
+    "role": "hero",
+    "alt": "A dark timber lodge on a wooded slope running down to open water, with a matching boathouse and short jetty at the shoreline and rough grass between the two buildings."
+  },
+  "04-orchard-house": {
+    "role": "hero",
+    "alt": "A long low house with a covered terrace and a lap pool, seen from almost directly above, with an orchard planted in even rows on the slope behind it and a walled gravel court in front."
+  },
+  "05-clapboard-house": {
+    "role": "hero",
+    "alt": "A pale clapboard house with a double garage and a wide gravel turning circle, framed by tall trees just beginning to turn, with lawn running down to the road."
+  },
+  "01-holiday-lets": {
+    "role": "portfolio",
+    "order": 1,
+    "alt": "A contemporary house with a monopitch roof standing at the end of a long straight drive, surrounded by hedged fields that run out to open farmland and low hills on the horizon.",
+    "outcome": "Shows the drive, the field boundary, and how far the nearest neighbour actually is."
+  },
+  "02-land-and-rural": {
+    "role": "portfolio",
+    "order": 2,
+    "alt": "A large house standing alone in a post-and-rail paddock, with mature woodland closing two sides and farmland stretching away behind it.",
+    "outcome": "The paddock reads as acreage rather than a number in the particulars."
+  },
+  "03-developers": {
+    "role": "portfolio",
+    "order": 3,
+    "alt": "A newly built house on high moorland, with a graded access track winding up through dark volcanic ground, timber outbuildings part-finished beside it and a mountain range on the skyline.",
+    "outcome": "Flown from the same point each visit, so the build reads as a sequence."
+  }
+}

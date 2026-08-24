@@ -1,0 +1,61 @@
+{
+  "_readme": [
+    "OPTIONAL. You only need an entry here if a photograph needs fixing.",
+    "Most people never touch this file — drop images in source/ and run",
+    "`npm run images` and that is the whole job.",
+    "",
+    "Key = the filename as it sits in source/ (just the name, not the folder).",
+    "",
+    "  crop:   { left, top, width, height }  in pixels on the original,",
+    "          measured AFTER any sideways-phone rotation is corrected.",
+    "          Use this to cut burned-in text off an edge. Crop inward from the",
+    "          edge holding the text; never blur or clone it out.",
+    "  rotate: degrees clockwise, for levelling a horizon that is a degree off.",
+    "  ignoreExifOrientation: true — for a file stored the right way round that",
+    "          still carries a rotation tag from an earlier edit. Symptom: the",
+    "          photograph appears on its side on the site but looks fine in",
+    "          Preview. `npm run check` flags any file carrying such a tag.",
+    "  slug:   the filename used on the website. Defaults to the filename.",
+    "  note:   free text, echoed into rejects.txt.",
+    "",
+    "Originals in source/ are never modified. Everything happens here so a crop",
+    "can be reviewed, changed and undone."
+  ],
+
+  "_settings": {
+    "_note": "targetLongEdge is the widest any photograph is ever stored at. Nothing on the site is displayed above about 1300 CSS pixels, so 1600 covers a 2x screen at the widest slot. Raising it will blow the 400KB-per-image budget that npm run build enforces.",
+    "targetLongEdge": 1600,
+    "standaloneLongEdge": 1400,
+    "quality": 80,
+    "masterQuality": 88,
+    "minUsableLongEdge": 400,
+    "smallWarning": 1200
+  },
+
+  "01 - establishing.jpeg": {
+    "slug": "case-01-establishing",
+    "note": "Apple Photos preview export at 1024px. Re-export the original for a sharper file."
+  },
+  "02 - rear elevation.jpeg": {
+    "slug": "case-02-rear-elevation",
+    "note": "Apple Photos preview export at 1024px. Re-export the original for a sharper file."
+  },
+  "03 - plot boundaries.jpeg": {
+    "slug": "case-03-plot-boundaries",
+    "note": "Apple Photos preview export at 1024px. Re-export the original for a sharper file."
+  },
+
+  "02 - land and rural.jpeg": {
+    "ignoreExifOrientation": true,
+    "note": "Stored the right way round at 1195x896, but carries a bogus EXIF Orientation 8 from whatever last re-encoded it. Honouring that tag turned the photograph on its side."
+  },
+
+  "IMG_9703.JPG": {
+    "slug": "comparison-ground",
+    "note": "iPhone 13 Pro, shot from the terrace. The ground half of the comparison pair."
+  },
+  "5D800966-1B53-41A5-BE2A-EEE1119B3455_1_105_c.jpeg": {
+    "slug": "comparison-aerial",
+    "note": "Same frame as case-02. The aerial half of the comparison pair."
+  }
+}

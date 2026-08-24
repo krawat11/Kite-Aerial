@@ -1,0 +1,131 @@
+---
+import Base from '../layouts/Base.astro';
+import DevNote from '../components/DevNote.astro';
+import site from '../content/site.json';
+import { url } from '../lib/url.js';
+
+const model = site.credentials.aircraftModel?.startsWith('TODO') ? null : site.credentials.aircraftModel;
+---
+
+<Base
+  title="About"
+  description="A one-person aerial photography service in South Wales. CAA Flyer ID and Operator ID held, insured, flying a sub-250g aircraft in Open category subcategory A1."
+>
+  <article>
+    <header class="section head">
+      <div class="wrap">
+        <p class="eyebrow">About</p>
+        <h1>Kite Aerial is one person and one small aircraft.</h1>
+        <p class="lede">
+          Named after the red kite, which does the same job with better equipment and no paperwork.
+        </p>
+      </div>
+    </header>
+
+    <section class="section" aria-labelledby="who">
+      <div class="wrap cols">
+        <h2 id="who">Who's flying</h2>
+        <div class="colbody">
+
+        <DevNote label="write this bit">
+          Two or three paragraphs in your own voice: how you got into this, what you did before, why South Wales.
+          It is the only part of the site nobody else can write for you, and on a one-person service it is the part
+          that decides whether somebody trusts you with their listing. Keep it short and specific — where you
+          learned to fly, what the first paid job was, what you got wrong on it.
+        </DevNote>
+
+        <p>
+          I have flown several house shoots around Swansea and the Gower so far, and covered one property properly
+          from top to bottom — multiple angles, several heights, and an orbit on video. That one is
+          <a href={url("/case-study")}>written up as a case study</a>, because a full sequence shows more about how
+          somebody works than a grid of best shots ever does.
+        </p>
+      </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="paperwork">
+      <div class="wrap cols">
+        <h2 id="paperwork">The paperwork</h2>
+        <div class="colbody">
+        <p>
+          I hold a CAA Flyer ID and a CAA Operator ID. {site.credentials.insurance} The aircraft is sub-250g and
+          in the UK0/C0 class{model ? `, ${model}` : ''}, which puts the work in the Open category, subcategory A1.
+        </p>
+        <p>
+          A1 is the part that matters commercially: it lets me fly in residential and built-up areas rather than
+          keeping a hundred and fifty metres clear of them. That is the difference between photographing a house on
+          a normal street and not being able to.
+        </p>
+        <p>
+          I check airspace, land ownership and any site-specific permissions before quoting a date. There is a
+          <a href={url("/where-we-fly")}>longer page about that</a> if you want to see the working.
+        </p>
+      </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="not">
+      <div class="wrap cols">
+        <h2 id="not">What I don't do</h2>
+        <div class="colbody">
+        <p>
+          I don't do survey work, and I'd be careful of anyone with a drone this size who says they do. The camera
+          has a rolling shutter, which bends geometry slightly while the sensor reads out, and no amount of
+          processing fully removes that. So I will happily build you a 3D visualisation of a building or a plot.
+          I will not put a measurement on it and call it accurate.
+        </p>
+        <p>
+          I also don't publish numbers about how much faster aerial photographs sell a house. The figure that gets
+          quoted everywhere traces back to a marketing blog and American data, and I would rather show you a
+          property from a hundred metres up and let you decide.
+        </p>
+      </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="cost">
+      <div class="wrap cols">
+        <h2 id="cost">On the price</h2>
+        <div class="colbody">
+        <p>
+          A listing shoot costs roughly what a good Gower let takes in a night or two in August. I'd put it on that
+          side of the ledger rather than filing it with the marketing costs — the photographs stay useful for as
+          long as the property does.
+        </p>
+        <p><a class="btn" href={url("/#enquiry")}>Send an enquiry</a></p>
+      </div>
+      </div>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .head h1 {
+    margin-bottom: 1.5rem;
+    max-width: 20ch;
+  }
+
+  .cols {
+    display: grid;
+    gap: 1.5rem 3rem;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  @media (min-width: 56rem) {
+    .cols {
+      grid-template-columns: minmax(12rem, 16rem) minmax(0, 38rem);
+    }
+  }
+
+  .colbody > * + * {
+    margin-top: 1.15rem;
+  }
+
+  .colbody p {
+    line-height: 1.62;
+    margin: 0;
+    max-width: 38rem;
+  }
+</style>

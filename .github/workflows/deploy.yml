@@ -1,0 +1,56 @@
+# Publishes the site to GitHub Pages on every push to main.
+#
+# Before the first run:
+#   1. Settings -> Pages -> Source: "GitHub Actions"
+#   2. Set `deploy.url` and `deploy.base` in src/content/site.json to match.
+#      A project repo serves from /repo-name/ and needs the trailing slash.
+#
+# The build runs `npm run verify`, so a push that breaks the performance
+# budget, ships borrowed imagery, or points the enquiry form at localhost
+# fails here rather than going live.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # NOTE: no `npm run images` here on purpose. source/ is gitignored, so
+      # there would be nothing to process, and the ingest clears its output
+      # directory before it starts — it would delete the committed photographs
+      # and deploy a site with no images. src/images/derived/ and public/media/
+      # are committed precisely so this step is unnecessary.
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

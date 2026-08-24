@@ -1,0 +1,114 @@
+{
+  "_readme": [
+    "Every fact and figure that appears in more than one place lives here.",
+    "Anything marked TODO is unconfirmed and must be checked before launch.",
+    "showSetupNotes: set to false to hide every \"drop photographs here\" panel",
+    "and placeholder instruction on the site, without deleting anything."
+  ],
+  "showSetupNotes": false,
+  "name": "Kite Aerial",
+  "tagline": "Aerial photography for property in South Wales",
+  "email": "rawat.keshav11@gmail.com",
+  "phone": null,
+  "area": "Gower, Swansea, Neath Port Talbot and Carmarthenshire",
+  "credentials": {
+    "flyerId": true,
+    "operatorId": true,
+    "insurance": "Public liability insurance held.",
+    "aircraftClass": "Sub-250g, UK0/C0 class",
+    "aircraftModel": null,
+    "subcategory": "A1"
+  },
+  "prices": [
+    {
+      "id": "listing",
+      "name": "Listing shoot",
+      "price": "£150–£200",
+      "summary": "Around two hours on site. 10 to 15 edited stills.",
+      "includes": [
+        "Wide establishing frames showing the position and the surroundings",
+        "Closer elevations at the heights that suit the building",
+        "A top-down frame showing the plot and its boundaries",
+        "Edited full-resolution files, sized for listings and for print",
+        "Licensed for your listing, your own marketing, and your agent's"
+      ]
+    },
+    {
+      "id": "listing-video",
+      "name": "Listing shoot plus video",
+      "price": "£250–£325",
+      "priceConfirmed": false,
+      "summary": "Everything in the listing shoot, plus an orbit video of the property.",
+      "includes": [
+        "Everything in the listing shoot",
+        "A slow orbit of the building, edited and colour graded",
+        "Cut for a listing page and for a portrait social post",
+        "Delivered as a file you own, not a link that expires"
+      ]
+    }
+  ],
+  "priceNote": "Both are fixed on the day, not estimated afterwards. Travel inside the area above is included.",
+  "testimonials": [
+    {
+      "id": "t1",
+      "quote": null,
+      "attribution": null,
+      "role": null,
+      "status": "TODO — verbal only. Do not publish until the owner has confirmed the exact wording in writing."
+    },
+    {
+      "id": "t2",
+      "quote": null,
+      "attribution": null,
+      "role": null,
+      "status": "TODO — verbal only. Do not publish until the owner has confirmed the exact wording in writing."
+    }
+  ],
+  "comparison": {
+    "ground": "comparison-ground",
+    "aerial": "comparison-aerial",
+    "status": "Done — iPhone shot from the terrace beside the aerial of the same house. Shoot a pair like this on every job; it is the most persuasive thing on the page."
+  },
+  "form": {
+    "_readme": [
+      "Where the enquiry form sends. Change `provider` and `endpoint` together.",
+      "",
+      "  formsubmit  https://formsubmit.co/ajax/YOUR@EMAIL - free, no account.",
+      "              The FIRST submission triggers a confirmation email you must",
+      "              click before anything else arrives. Works on GitHub Pages.",
+      "              Once activated, swap in their hashed endpoint so your email",
+      "              address is not sitting in the page source for scrapers.",
+      "",
+      "  netlify     Only works when deployed to Netlify, and Forms must be",
+      "              enabled for the site. Set endpoint to null.",
+      "",
+      "  formspree   https://formspree.io/f/YOUR_ID - free tier, needs an account.",
+      "  web3forms   https://api.web3forms.com/submit - needs a free access key,",
+      "              which goes in accessKey below.",
+      "",
+      "In `npm run dev` the form posts to the local receiver instead, so you can",
+      "test the whole flow without sending anything. Start it with `npm run form:test`.",
+      "Set testLocally to false to point dev at the real service."
+    ],
+    "provider": "formsubmit",
+    "endpoint": "https://formsubmit.co/ajax/rawat.keshav11@gmail.com",
+    "accessKey": null,
+    "testLocally": true,
+    "localEndpoint": "http://localhost:4444/enquiry"
+  },
+  "deploy": {
+    "_readme": [
+      "Where this gets published. Both values end up in canonical URLs, the",
+      "sitemap and robots.txt, so they must match reality before you deploy.",
+      "",
+      "GitHub Pages, user site  https://USERNAME.github.io   base: /",
+      "GitHub Pages, project    https://USERNAME.github.io   base: /REPO-NAME/",
+      "Netlify                  https://SITE.netlify.app     base: /",
+      "Own domain               https://kiteaerial.co.uk     base: /",
+      "",
+      "A project repo MUST have the trailing slash on base or every asset 404s."
+    ],
+    "url": "https://krawat11.github.io",
+    "base": "/Kite-Aerial/"
+  }
+}

@@ -1,0 +1,87 @@
+---
+/**
+ * Scaffolding, not site copy.
+ *
+ * Deliberately styled so it can never be mistaken for something a visitor is
+ * meant to read: mono type, a dashed rule, the accent colour. Each one appears
+ * only while the thing it describes is missing, and vanishes on its own once
+ * the photographs are in.
+ *
+ * To silence the lot without deleting anything, set showSetupNotes to false in
+ * src/content/site.json.
+ */
+import site from '../content/site.json';
+
+const { title = 'Add photographs', tone = 'inline' } = Astro.props;
+const on = site.showSetupNotes !== false;
+---
+
+{
+  on && (
+    <aside class:list={['setup', `setup--${tone}`]}>
+      <p class="setup__title">{title}</p>
+      <div class="setup__body">
+        <slot />
+      </div>
+    </aside>
+  )
+}
+
+<style>
+  .setup {
+    font-family: var(--mono);
+    border: 1px dashed color-mix(in srgb, var(--tide) 45%, var(--mist));
+    background: color-mix(in srgb, var(--tide) 4%, var(--base));
+    padding: 1.15rem 1.3rem;
+    margin-block: 1.75rem;
+    max-width: 46rem;
+  }
+
+  .setup--banner {
+    max-width: none;
+    margin-block: 0 2.5rem;
+  }
+
+  .setup__title {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--tide);
+    margin: 0 0 0.75rem;
+  }
+
+  .setup__body {
+    font-size: 0.8rem;
+    line-height: 1.75;
+    color: color-mix(in srgb, var(--slate) 82%, var(--sea));
+  }
+
+  .setup__body :global(p) {
+    margin: 0 0 0.7rem;
+    max-width: 44rem;
+  }
+
+  .setup__body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .setup__body :global(code) {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--tide);
+    background: color-mix(in srgb, var(--tide) 8%, transparent);
+    padding: 0.08em 0.32em;
+  }
+
+  .setup__body :global(ul) {
+    margin: 0.4rem 0 0.9rem;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .setup__body :global(strong) {
+    font-weight: 700;
+    color: var(--slate);
+  }
+</style>

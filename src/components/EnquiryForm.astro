@@ -1,0 +1,449 @@
+---
+/**
+ * The enquiry form. The only thing on the site that has to do something.
+ *
+ * Works three ways, in descending order of how nice it is:
+ *
+ *   1. With JavaScript — validates in place, posts in the background, and
+ *      swaps in a confirmation without losing the page. Errors are recoverable:
+ *      nothing typed is ever thrown away.
+ *   2. Without JavaScript — a plain POST to the same endpoint. The browser's
+ *      own required-field handling takes over and the service's redirect
+ *      lands on /enquiry-received.
+ *   3. In `npm run dev` — posts to the local receiver instead, so the whole
+ *      flow can be exercised without sending anything to anybody.
+ *
+ * Where it posts is set in src/content/site.json, because which service you use
+ * depends on where the site is hosted and that should not mean editing markup.
+ */
+import site from '../content/site.json';
+
+const f = site.form ?? {};
+const isNetlify = f.provider === 'netlify';
+const useLocal = import.meta.env.DEV && f.testLocally !== false;
+
+const action = isNetlify ? '/enquiry-received' : useLocal ? f.localEndpoint : f.endpoint;
+
+const fields = [
+  { id: 'name', label: 'Your name', type: 'text', autocomplete: 'name', required: true, half: true },
+  { id: 'email', label: 'Email', type: 'email', autocomplete: 'email', required: true, half: true },
+  { id: 'phone', label: 'Phone', type: 'tel', autocomplete: 'tel', required: false, half: true, optional: true },
+  {
+    id: 'where',
+    label: 'Where the property is',
+    type: 'text',
+    required: true,
+    half: true,
+    placeholder: 'Village or postcode',
+  },
+];
+---
+
+<form
+  id="enquiry-form"
+  name="enquiry"
+  method="POST"
+  action={action}
+  data-endpoint={action}
+  data-provider={f.provider}
+  data-local={useLocal ? 'true' : 'false'}
+  data-fallback-email={site.email}
+  class="form"
+  novalidate
+  {...isNetlify ? { 'data-netlify': 'true', 'netlify-honeypot': 'company' } : {}}
+>
+  {isNetlify && <input type="hidden" name="form-name" value="enquiry" />}
+  {f.provider === 'web3forms' && f.accessKey && <input type="hidden" name="access_key" value={f.accessKey} />}
+  {
+    f.provider === 'formsubmit' && (
+      <>
+        <input type="hidden" name="_subject" value="Kite Aerial — new enquiry" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_captcha" value="false" />
+        <input type="hidden" name="_next" value="/enquiry-received" data-next-absolute />
+      </>
+    )
+  }
+
+  {/* Bots fill this in. People never see it. */}
+  <div class="form__hp" aria-hidden="true">
+    <label>
+      Leave this blank
+      <input name="company" type="text" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+
+  <div class="form__grid">
+    {
+      fields.map((field) => (
+        <p class:list={['field', { 'field--full': !field.half }]}>
+          <label for={field.id}>
+            {field.label}
+            {field.optional && <span class="field__opt"> optional</span>}
+          </label>
+          <input
+            id={field.id}
+            name={field.id}
+            type={field.type}
+            autocomplete={field.autocomplete}
+            placeholder={field.placeholder}
+            required={field.required || undefined}
+            aria-describedby={`${field.id}-error`}
+          />
+          <span class="field__error" id={`${field.id}-error`} />
+        </p>
+      ))
+    }
+
+    <p class="field field--full">
+      <label for="what">What you need</label>
+      <select id="what" name="what">
+        <option value={`Listing shoot — ${site.prices[0].price}`}>Listing shoot — {site.prices[0].price}</option>
+        <option value={`Listing shoot plus video — ${site.prices[1].price}`}>
+          Listing shoot plus video — {site.prices[1].price}
+        </option>
+        <option value="Not sure yet">Not sure yet</option>
+      </select>
+    </p>
+
+    <p class="field field--full">
+      <label for="when">When you need it by <span class="field__opt">optional</span></label>
+      <input id="when" name="when" type="text" placeholder="A date, or roughly when the listing goes live" />
+    </p>
+
+    <p class="field field--full">
+      <label for="message">Anything else</label>
+      <textarea id="message" name="message" rows="4" aria-describedby="message-hint"></textarea>
+      <span class="field__hint" id="message-hint">
+        Useful to know: whether the property is a let or a sale, how much land goes with it, and whether anyone
+        needs to give permission for take-off and landing.
+      </span>
+    </p>
+  </div>
+
+  <div class="form__actions">
+    <button class="btn" type="submit" data-submit>
+      <span data-label>Send an enquiry</span>
+    </button>
+    <p class="mono form__status" role="status" aria-live="polite" data-status></p>
+  </div>
+
+  <p class="mono form__foot">
+    I reply to every enquiry, usually the same day. I will check the airspace and any landowner permissions before
+    quoting a date.
+  </p>
+</form>
+
+<div class="sent" id="enquiry-sent" hidden tabindex="-1">
+  <p class="eyebrow">Enquiry received</p>
+  <h3>That's arrived.</h3>
+  <p>
+    I'll read it today and reply with what's possible at that address, whether anything needs permission first, and
+    a date.
+  </p>
+  <p class="mono sent__echo" data-echo></p>
+</div>
+
+<script>
+  /*
+   * Progressive enhancement only. Everything below improves a form that already
+   * works without it: the markup posts natively if this never runs.
+   */
+  const form = document.getElementById('enquiry-form');
+  const sent = document.getElementById('enquiry-sent');
+
+  if (form && sent) {
+    const button = form.querySelector('[data-submit]');
+    const label = form.querySelector('[data-label]');
+    const status = form.querySelector('[data-status]');
+    const provider = form.dataset.provider;
+
+    // FormSubmit wants an absolute URL to redirect back to.
+    const next = form.querySelector('[data-next-absolute]');
+    if (next) next.value = new URL('/enquiry-received', location.origin).href;
+
+    const messages = {
+      name: 'Please give me a name to reply to.',
+      email: 'I need an email address to reply to.',
+      emailFormat: "That doesn't look like an email address.",
+      where: 'Roughly where is the property? A village or postcode is enough.',
+    };
+
+    const setError = (input, text) => {
+      const slot = document.getElementById(`${input.id}-error`);
+      if (slot) slot.textContent = text || '';
+      input.setAttribute('aria-invalid', text ? 'true' : 'false');
+      input.closest('.field')?.classList.toggle('is-invalid', Boolean(text));
+    };
+
+    const validate = (input) => {
+      const value = input.value.trim();
+      if (input.required && !value) {
+        setError(input, messages[input.id] || 'This one is needed.');
+        return false;
+      }
+      if (input.type === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
+        setError(input, messages.emailFormat);
+        return false;
+      }
+      setError(input, '');
+      return true;
+    };
+
+    // Validate on the way out of a field, then live once it has been corrected.
+    for (const input of form.querySelectorAll('input[required], input[type="email"]')) {
+      input.addEventListener('blur', () => validate(input));
+      input.addEventListener('input', () => {
+        if (input.getAttribute('aria-invalid') === 'true') validate(input);
+      });
+    }
+
+    form.addEventListener('submit', async (event) => {
+      const inputs = [...form.querySelectorAll('input[required], input[type="email"]')];
+      const bad = inputs.filter((i) => !validate(i));
+
+      if (bad.length) {
+        event.preventDefault();
+        status.textContent = `${bad.length} field${bad.length > 1 ? 's' : ''} to fix above.`;
+        bad[0].focus();
+        return;
+      }
+
+      // Honeypot: quietly succeed rather than telling a bot what gave it away.
+      if (form.elements.company?.value) {
+        event.preventDefault();
+        form.hidden = true;
+        sent.hidden = false;
+        return;
+      }
+
+      event.preventDefault();
+      button.disabled = true;
+      label.textContent = 'Sending…';
+      status.textContent = '';
+
+      /*
+       * Build the payload by hand rather than shipping the raw FormData. The
+       * honeypot must never leave the browser, and empty optional fields would
+       * otherwise arrive as blank rows in the notification email.
+       */
+      const raw = new FormData(form);
+      const data = new FormData();
+      for (const [key, value] of raw.entries()) {
+        if (key === 'company') continue;
+        if (typeof value === 'string' && !value.trim()) continue;
+        data.append(key, value);
+      }
+
+      const asJson = provider === 'formsubmit' || form.dataset.local === 'true';
+
+      try {
+        // Read at submit time, not at load, so the endpoint stays overridable.
+        const response = await fetch(form.dataset.endpoint, {
+          method: 'POST',
+          headers: asJson
+            ? { 'Content-Type': 'application/json', Accept: 'application/json' }
+            : { Accept: 'application/json' },
+          body: asJson ? JSON.stringify(Object.fromEntries(data)) : data,
+        });
+
+        if (!response.ok) throw new Error(`${response.status}`);
+
+        const echo = sent.querySelector('[data-echo]');
+        if (echo) echo.textContent = `Sent to ${data.get('email')} · ${new Date().toLocaleString('en-GB')}`;
+
+        form.hidden = true;
+        sent.hidden = false;
+        sent.focus();
+        sent.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (error) {
+        button.disabled = false;
+        label.textContent = 'Send an enquiry';
+        status.innerHTML =
+          'That did not go through. Try again, or email me directly at ' +
+          `<a href="mailto:${form.dataset.fallbackEmail || ''}">${form.dataset.fallbackEmail || ''}</a>.`;
+        status.classList.add('is-error');
+      }
+    });
+  }
+</script>
+
+<style>
+  .form {
+    max-width: 42rem;
+  }
+
+  .form[hidden] {
+    display: none;
+  }
+
+  .form__hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .form__grid {
+    display: grid;
+    gap: 1.15rem 1.5rem;
+    grid-template-columns: 1fr;
+    margin-bottom: 1.9rem;
+  }
+
+  @media (min-width: 34rem) {
+    .form__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .field--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .field {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  label {
+    font-size: 0.86rem;
+    font-weight: 500;
+  }
+
+  .field__opt {
+    color: var(--sea);
+    font-weight: 400;
+  }
+
+  .field__hint {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--sea);
+    max-width: 34rem;
+  }
+
+  .field__error {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: #9a3412;
+    min-height: 0;
+  }
+
+  .field__error:empty {
+    display: none;
+  }
+
+  input,
+  select,
+  textarea {
+    font: inherit;
+    font-size: 1rem;
+    color: var(--slate);
+    background: var(--paper);
+    border: 1px solid var(--mist);
+    padding: 0.7rem 0.8rem;
+    width: 100%;
+    border-radius: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .is-invalid input {
+    border-color: #9a3412;
+    box-shadow: inset 2px 0 0 #9a3412;
+  }
+
+  select {
+    background-image: linear-gradient(45deg, transparent 50%, var(--sea) 50%),
+      linear-gradient(135deg, var(--sea) 50%, transparent 50%);
+    background-position:
+      calc(100% - 18px) calc(50% + 1px),
+      calc(100% - 13px) calc(50% + 1px);
+    background-size:
+      5px 5px,
+      5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 2.4rem;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 6rem;
+  }
+
+  input:hover,
+  select:hover,
+  textarea:hover {
+    border-color: var(--sea);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: color-mix(in srgb, var(--sea) 70%, transparent);
+  }
+
+  .form__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.9rem 1.25rem;
+  }
+
+  button[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .form__status {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .form__status.is-error {
+    color: #9a3412;
+  }
+
+  .form__status:empty {
+    display: none;
+  }
+
+  .form__foot {
+    margin-top: 1.4rem;
+    line-height: 1.7;
+    max-width: 34rem;
+  }
+
+  /* ---- the confirmation that replaces the form ---- */
+
+  .sent {
+    border-left: 2px solid var(--tide);
+    padding-left: 1.4rem;
+    max-width: 34rem;
+  }
+
+  .sent[hidden] {
+    display: none;
+  }
+
+  .sent:focus {
+    outline: none;
+  }
+
+  .sent h3 {
+    margin: 0 0 0.9rem;
+    font-size: var(--step-2);
+  }
+
+  .sent__echo {
+    margin-top: 1.2rem;
+    padding-top: 0.9rem;
+    border-top: var(--rule);
+    font-size: 0.72rem;
+  }
+</style>

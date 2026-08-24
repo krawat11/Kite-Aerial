@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/url.js';
+---
+
+<Base
+  title="Enquiry received"
+  description="Your enquiry has reached Kite Aerial. I read every one and usually reply the same day."
+  noindex
+>
+  <section class="section">
+    <div class="wrap wrap--narrow">
+      <p class="eyebrow">Enquiry received</p>
+      <h1>That's arrived.</h1>
+      <p class="lede" style="margin-top:1.4rem">
+        I'll read it today and reply with what's possible at that address, whether anything needs permission first,
+        and a date.
+      </p>
+      <p style="margin-top:2rem">
+        <a class="btn btn--quiet" href={url("/")}>Back to the start</a>
+      </p>
+    </div>
+  </section>
+</Base>

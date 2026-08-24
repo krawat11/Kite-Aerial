@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/url.js';
+---
+
+<Base
+  title="Page not found"
+  description="That page isn't here. Links to the four pages that are: the home page, a full shoot, where I can fly, and about."
+  noindex
+>
+  <section class="section">
+    <div class="wrap wrap--narrow">
+      <p class="eyebrow">404</p>
+      <h1>That page isn't here.</h1>
+      <p class="lede" style="margin-top:1.4rem">
+        Either it moved or the link was wrong. The four pages that do exist are below.
+      </p>
+      <ul class="lost">
+        <li><a href={url('/')}>The home page</a>, with prices and the enquiry form</li>
+        <li><a href={url('/case-study')}>A full shoot</a>, start to finish</li>
+        <li><a href={url('/where-we-fly')}>Where I can fly</a> in South Wales, and what needs permission first</li>
+        <li><a href={url('/about')}>About</a> — registration, insurance and kit</li>
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    margin: 2.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.9rem;
+    max-width: 34rem;
+  }
+
+  .lost li {
+    padding-top: 0.9rem;
+    border-top: var(--rule);
+    line-height: 1.5;
+  }
+</style>

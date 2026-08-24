@@ -1,0 +1,18 @@
+---
+/**
+ * A build-time TODO, visible only during `npm run dev`.
+ * Never rendered into a production build — nothing here reaches a visitor.
+ */
+const { label = 'todo' } = Astro.props;
+const show = import.meta.env.DEV;
+---
+
+{
+  show && (
+    <p class="devnote">
+      <strong>{label}</strong>
+      <br />
+      <slot />
+    </p>
+  )
+}

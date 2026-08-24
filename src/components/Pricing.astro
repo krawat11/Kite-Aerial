@@ -1,0 +1,142 @@
+---
+/**
+ * Prices are on the page. Testimonials sit beside them, at the point where
+ * somebody decides, rather than in a section of their own.
+ */
+import site from '../content/site.json';
+import Testimonial from './Testimonial.astro';
+import DevNote from './DevNote.astro';
+
+const ready = site.testimonials.filter((t) => t.quote && t.attribution);
+const hasQuotes = ready.length > 0;
+const unconfirmed = site.prices.filter((p) => p.priceConfirmed === false);
+---
+
+<section class="section" id="prices" aria-labelledby="prices-h">
+  <div class="wrap">
+    <p class="eyebrow">Prices</p>
+    <h2 id="prices-h">Two ways to book.</h2>
+    <p class="lede" style="margin-top:1.1rem">{site.priceNote}</p>
+
+    {
+      unconfirmed.map((p) => (
+        <DevNote label="price unconfirmed">
+          "{p.name}" shows {p.price}. The brief specified a figure only for the listing shoot, so this bracket was
+          set as a placeholder. Confirm it, then set priceConfirmed to true in src/content/site.json.
+        </DevNote>
+      ))
+    }
+
+    <div class:list={['prices', { 'prices--with-quotes': hasQuotes }]}>
+      {
+        site.prices.map((p) => (
+          <article class="price">
+            <h3>{p.name}</h3>
+            <p class="price__figure">{p.price}</p>
+            <p class="price__summary">{p.summary}</p>
+            <ul class="price__list">
+              {p.includes.map((line) => (
+                <li>{line}</li>
+              ))}
+            </ul>
+            <a class="btn price__btn" href="#enquiry">
+              Send an enquiry
+            </a>
+          </article>
+        ))
+      }
+
+      <div class="prices__aside">
+        {site.testimonials.map((t) => <Testimonial item={t} />)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .prices {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr;
+    margin-top: 2.75rem;
+    align-items: start;
+  }
+
+  @media (min-width: 46rem) {
+    .prices {
+      grid-template-columns: 1fr 1fr;
+    }
+    .prices__aside {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (min-width: 68rem) {
+    .prices--with-quotes {
+      grid-template-columns: 1fr 1fr 0.8fr;
+    }
+    .prices--with-quotes .prices__aside {
+      grid-column: auto;
+      padding-top: 0.4rem;
+    }
+  }
+
+  .price {
+    border-top: 2px solid var(--slate);
+    padding-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .price__figure {
+    font-family: var(--display);
+    font-variation-settings: 'opsz' 48;
+    font-size: var(--step-2);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin: 0.55rem 0 0.85rem;
+  }
+
+  .price__summary {
+    color: color-mix(in srgb, var(--slate) 88%, var(--sea));
+    margin-bottom: 1.15rem;
+  }
+
+  .price__list {
+    list-style: none;
+    margin: 0 0 1.75rem;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+    font-size: 0.94rem;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--slate) 82%, var(--sea));
+  }
+
+  .price__list li {
+    padding-left: 1.05rem;
+    position: relative;
+    text-wrap: pretty;
+  }
+
+  .price__list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 5px;
+    height: 1px;
+    background: var(--sea);
+  }
+
+  .price__btn {
+    align-self: flex-start;
+    margin-top: auto;
+  }
+
+  .prices__aside {
+    display: grid;
+    gap: 1.75rem;
+  }
+</style>

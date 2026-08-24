@@ -1,0 +1,14 @@
+Kite Aerial — image ingest report
+generated 2026-08-24T19:35:12.187Z
+source: source/   found 13, used 13
+
+NOT USED — nothing. Every file was read.
+
+WORTH KNOWING (6)
+
+  case-study/01 - establishing.jpeg — only 1024px on the long edge. It will be used, but it may look soft in a large slot. A bigger export would be better.
+  case-study/02 - rear elevation.jpeg — only 1024px on the long edge. It will be used, but it may look soft in a large slot. A bigger export would be better.
+  case-study/03 - plot boundaries.jpeg — only 1024px on the long edge. It will be used, but it may look soft in a large slot. A bigger export would be better.
+  comparison/aerial/5D800966-1B53-41A5-BE2A-EEE1119B3455_1_105_c.jpeg — only 1024px on the long edge. It will be used, but it may look soft in a large slot. A bigger export would be better.
+  hero/03 - lakeside lodge.jpeg — only 1152px on the long edge. It will be used, but it may look soft in a large slot. A bigger export would be better.
+  portfolio/02 - land and rural.jpeg — only 1195px on the long edge. It will be used, but it may look soft in a large slot. A bigger export would be better.

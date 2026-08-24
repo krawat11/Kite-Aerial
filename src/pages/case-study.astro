@@ -1,0 +1,303 @@
+---
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import Base from '../layouts/Base.astro';
+import Frame from '../components/Frame.astro';
+import SetupNote from '../components/SetupNote.astro';
+import { url } from '../lib/url.js';
+import { framesFor, widthsFor } from '../lib/frames.js';
+
+/*
+ * The video stage only exists if `npm run video` has actually produced
+ * something. Checked at build time rather than assumed, so an unencoded site
+ * ships a page that reads correctly instead of a broken player.
+ */
+const MEDIA = path.resolve('public/media');
+const videoSources = [
+  { src: url('/media/orbit.av1.mp4'), type: 'video/mp4; codecs=av01.0.05M.08' },
+  { src: url('/media/orbit.h264.mp4'), type: 'video/mp4; codecs=avc1.640028' },
+].filter((s) => existsSync(path.join(MEDIA, path.basename(s.src))));
+const hasVideo = videoSources.length > 0 && existsSync(path.join(MEDIA, 'orbit-poster.jpg'));
+
+// With nothing in source/case-study/ the page still draws its full shape —
+// three numbered stages with empty slots — so it is obvious what goes where.
+const real = framesFor('case');
+const stages = real.length ? real : [null, null, null];
+const first = real[0];
+
+// The frames are shown in editorial order, which is not the order they were
+// flown, so the log takes the true range rather than first-to-last on the page.
+const times = real.map((s) => s.flight?.time).filter(Boolean).sort();
+const flownOn = first?.flight?.date?.split('-').reverse().join('.');
+---
+
+<Base
+  title="Case study"
+  description="One property north of Swansea, photographed in sequence: an establishing frame, closer elevations, a top-down showing the plot boundaries, and an orbit on video."
+>
+  <article>
+    <header class="section head">
+      <div class="wrap">
+        <p class="eyebrow">Case study</p>
+        <h1>One property, one morning.</h1>
+        <p class="lede">
+          A house on a hillside north of Swansea. Four minutes of flying, four positions, and a short orbit. This
+          is the whole set, in the order it was flown, with a note on what each angle is for.
+        </p>
+        {
+          first && (
+            <p class="mono head__log">
+              {flownOn} · {first.flight.coords} · {real.length} stills and one orbit ·{' '}
+              {times[0]}–{times[times.length - 1]}
+            </p>
+          )
+        }
+
+        {
+          !real.length && (
+            <SetupNote title="The sequence">
+              <p>
+                Put one shoot in <code>source/case-study/</code>, named in the order you flew it —
+                <code>01 - establishing.jpg</code>, <code>02 - closer.jpg</code>,
+                <code>03 - top down.jpg</code> — then run <code>npm run images</code>. Add as many stages as the
+                property needed; the page grows to fit.
+              </p>
+              <p>
+                Each stage takes two or three lines in your own voice explaining why that angle was flown. Put
+                them in <code>src/content/frames.json</code> under the image's slug, as <code>stage</code>. That
+                writing is what turns photographs into evidence of competence.
+              </p>
+            </SetupNote>
+          )
+        }
+      </div>
+    </header>
+
+    {
+      stages.map((frame, i) => (
+        <section class="stage" aria-label={`Stage ${i + 1}`}>
+          <div class="wrap stage__inner">
+            <div class="stage__text">
+              <p class="mono stage__n">{String(i + 1).padStart(2, '0')} / {String(stages.length).padStart(2, '0')}</p>
+              <p>{frame?.stage ?? 'Two or three lines here on what this angle is for and why you chose it.'}</p>
+              {frame?.outcome && <p class="stage__outcome">{frame.outcome}</p>}
+            </div>
+
+            <div class="stage__image">
+              <Frame
+                frame={frame}
+                role="case"
+                index={i + 1}
+                hint={`name it "${String(i + 1).padStart(2, '0')} - …" so it lands in this position`}
+                showCaption={false}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                widths={frame ? widthsFor(frame, [560, 900, 1280]) : null}
+                sizes="(min-width: 62rem) 62vw, 92vw"
+              />
+            </div>
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="stage" aria-label="Orbit video">
+      <div class="wrap stage__inner">
+        <div class="stage__text">
+          <p class="mono stage__n">{String(stages.length + 1).padStart(2, '0')} / {String(stages.length + 1).padStart(2, '0')}</p>
+          <p>
+            Stills tell you what is there. The orbit tells you how it sits together — which side gets the sun, how
+            the ground falls away behind the terrace, how far the neighbours actually are.
+          </p>
+          <p class="stage__outcome">Answers the question a still can't: what is behind me when I stand here?</p>
+        </div>
+
+        <div class="stage__image">
+          {
+            hasVideo ? (
+              <figure class="video">
+                <video controls preload="none" playsinline poster={url("/media/orbit-poster.jpg")} width="1600" height="900">
+                  {videoSources.map((s) => (
+                    <source src={s.src} type={s.type} />
+                  ))}
+                  <p>
+                    Your browser cannot play this video.{' '}
+                    <a href={videoSources[videoSources.length - 1].src}>Download it instead.</a>
+                  </p>
+                </video>
+                <figcaption class="mono">Orbit · press play · no sound</figcaption>
+              </figure>
+            ) : (
+              <div class="video video--empty">
+                <div class="video__slot" role="img" aria-label="Video slot — add a clip to source/video/">
+                  <span class="video__path">source/video/</span>
+                  <span class="video__hint">drop one clip here, then run npm run video</span>
+                </div>
+                <SetupNote title="The orbit">
+                  <p>
+                    Put one video in <code>source/video/</code> and run <code>npm run video</code>. It encodes two
+                    web versions and cuts a poster frame, so the page stays fast — nothing downloads until somebody
+                    presses play.
+                  </p>
+                  <p>
+                    <code>.mov</code> straight off the drone is fine, as are <code>.mp4</code>,{' '}
+                    <code>.m4v</code>, <code>.avi</code>, <code>.mkv</code> and <code>.webm</code>. 4K is fine;
+                    it gets scaled down. Sound is dropped. A slow orbit of 15–25 seconds carries this page best.
+                  </p>
+                  <p>
+                    Needs ffmpeg — <code>brew install ffmpeg</code> if you haven't got it. Until then this stage
+                    simply stays out of the built site rather than showing a broken player.
+                  </p>
+                </SetupNote>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="section closing">
+      <div class="wrap">
+        <p class="closing__line">
+          This is what this property needed. A terraced cottage with no land wants two frames, not five.
+        </p>
+        <p class="closing__cta">
+          <a class="btn" href={url("/#enquiry")}>Send an enquiry</a>
+        </p>
+      </div>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .head {
+    padding-bottom: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .head h1 {
+    margin-bottom: 1.5rem;
+  }
+
+  .head__log {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: var(--rule);
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+  }
+
+  .stage {
+    padding-block: clamp(2.5rem, 6vw, 4.5rem);
+    border-top: var(--rule);
+  }
+
+  .stage__inner {
+    display: grid;
+    gap: 1.75rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 62rem) {
+    .stage__inner {
+      grid-template-columns: minmax(15rem, 20rem) 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+  }
+
+  .stage__n {
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    margin: 0 0 1.1rem;
+    color: var(--tide);
+  }
+
+  .stage__text p {
+    max-width: 30rem;
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .stage__outcome {
+    margin-top: 1.1rem;
+    padding-top: 1.1rem;
+    border-top: var(--rule);
+    font-family: var(--display);
+    font-variation-settings: 'opsz' 20;
+    font-size: 1.06rem;
+    line-height: 1.35;
+    letter-spacing: -0.008em;
+    color: var(--slate);
+  }
+
+  .video {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .video video {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    background: var(--slate);
+    object-fit: cover;
+  }
+
+  .video figcaption {
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+  }
+
+  .video__slot {
+    aspect-ratio: 16 / 9;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.35rem;
+    text-align: center;
+    padding: 1rem;
+    border: 1px dashed var(--mist);
+    background:
+      repeating-linear-gradient(
+        -45deg,
+        transparent 0 11px,
+        color-mix(in srgb, var(--mist) 34%, transparent) 11px 12px
+      ),
+      color-mix(in srgb, var(--mist) 16%, var(--base));
+  }
+
+  .video__path {
+    font-family: var(--mono);
+    font-size: 0.86rem;
+    color: var(--tide);
+    background: color-mix(in srgb, var(--base) 88%, transparent);
+    padding: 0.3rem 0.6rem;
+  }
+
+  .video__hint {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--sea);
+    background: color-mix(in srgb, var(--base) 88%, transparent);
+    padding: 0.2rem 0.6rem;
+  }
+
+  .closing {
+    border-top: var(--rule);
+  }
+
+  .closing__line {
+    font-family: var(--display);
+    font-variation-settings: 'opsz' 60;
+    font-size: var(--step-2);
+    line-height: 1.2;
+    letter-spacing: -0.018em;
+    max-width: 34rem;
+    text-wrap: balance;
+  }
+
+  .closing__cta {
+    margin-top: 2rem;
+  }
+</style>

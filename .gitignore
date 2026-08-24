@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+.env
+form-submissions.log
+
+# Camera originals. Large, and never needed to build the site — the processed
+# versions below are what the pages use. Keep these backed up somewhere else.
+source/
+
+# Not Kite Aerial's work: dev-only layout filler. Cleared before every build,
+# and verify.mjs fails the build if any of it reaches dist/.
+reference/
+public/_reference/
+src/data/manifest.reference.json
+rejects.reference.txt
+
+# NOTE: src/images/derived/ and public/media/ are deliberately NOT ignored.
+# They are the web-ready photographs and video, and GitHub Actions needs them
+# to build — source/ is not in the repo. Rerun `npm run images` / `npm run video`
+# after changing a photograph and commit what changes.
