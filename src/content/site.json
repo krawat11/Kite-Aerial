@@ -7,10 +7,10 @@
   ],
   "showSetupNotes": false,
   "name": "Kite Aerial",
-  "tagline": "Aerial photography for property in South Wales",
+  "tagline": "Aerial photography for property",
   "email": "rawat.keshav11@gmail.com",
   "phone": null,
-  "area": "Gower, Swansea, Neath Port Talbot and Carmarthenshire",
+  "area": "All throughout the UK",
   "credentials": {
     "flyerId": true,
     "operatorId": true,
@@ -23,7 +23,7 @@
     {
       "id": "listing",
       "name": "Listing shoot",
-      "price": "£150–£200",
+      "price": "£110–£180",
       "summary": "Around two hours on site. 10 to 15 edited stills.",
       "includes": [
         "Wide establishing frames showing the position and the surroundings",
@@ -36,7 +36,7 @@
     {
       "id": "listing-video",
       "name": "Listing shoot plus video",
-      "price": "£250–£325",
+      "price": "£200–£315",
       "priceConfirmed": false,
       "summary": "Everything in the listing shoot, plus an orbit video of the property.",
       "includes": [
